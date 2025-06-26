@@ -26,7 +26,7 @@ export const TrailingParagraphExtension = Extension.create<TrailingParagraphOpti
       new Plugin({
         key: new PluginKey(this.name),
         props: {
-          handleClick: (view: EditorView, pos: number, event: MouseEvent) => {
+          handleClick: (view: EditorView) => {
             if (!view.editable) {
               return false;
             }
@@ -59,6 +59,22 @@ export const TrailingParagraphExtension = Extension.create<TrailingParagraphOpti
                     return false;
                   }
                 }
+              } else {
+                const lastChild = doc.lastChild;
+                if (lastChild && !handled) {
+                  const lastChildPos = doc.content.size - lastChild.nodeSize;
+                  const endPos = lastChildPos + lastChild.nodeSize;
+                  const newParagraph = state.schema.nodes.paragraph.create();
+                  const transaction = state.tr.insert(endPos, newParagraph);
+
+                  const newPos = endPos + 1;
+                  const selection = TextSelection.create(transaction.doc, newPos);
+                  transaction.setSelection(selection);
+
+                  dispatch(transaction);
+                  handled = true;
+                  return false;
+                }
               }
             });
 
@@ -75,6 +91,8 @@ export const TrailingParagraphExtension = Extension.create<TrailingParagraphOpti
               element.style.minHeight = '1em';
               return element;
             };
+
+            let pushed = false;
 
             doc.descendants((node, pos) => {
               if (node.type.name === options.parentNodeName) {
@@ -93,6 +111,19 @@ export const TrailingParagraphExtension = Extension.create<TrailingParagraphOpti
                       }),
                     );
                   }
+                }
+              } else {
+                const lastChild = doc.lastChild;
+                if (lastChild && !pushed) {
+                  const lastChildPos = doc.content.size - lastChild.nodeSize;
+                  const endPos = lastChildPos + lastChild.nodeSize;
+                  decorations.push(
+                    Decoration.widget(endPos, createWidget, {
+                      side: 0,
+                    }),
+                  );
+                  pushed = true;
+                  return false;
                 }
               }
             });
