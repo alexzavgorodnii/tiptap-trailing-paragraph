@@ -26,14 +26,16 @@ export const TrailingParagraphExtension = Extension.create<TrailingParagraphOpti
       new Plugin({
         key: new PluginKey(this.name),
         props: {
-          handleClick: (view: EditorView) => {
-            if (!view.editable) {
+          handleClick: (view: EditorView, pos: number, event: MouseEvent) => {
+            if (!view.editable || (event.target instanceof HTMLElement &&
+                !event.target.classList.contains(options.trailingParagraphClass))) {
               return false;
             }
 
             const { state, dispatch } = view;
             const { doc } = state;
             let handled = false;
+            let noPartNode = false;
 
             doc.descendants((node, nodePos) => {
               if (node.type.name === options.parentNodeName) {
@@ -60,23 +62,30 @@ export const TrailingParagraphExtension = Extension.create<TrailingParagraphOpti
                   }
                 }
               } else {
-                const lastChild = doc.lastChild;
-                if (lastChild && !handled) {
-                  const lastChildPos = doc.content.size - lastChild.nodeSize;
-                  const endPos = lastChildPos + lastChild.nodeSize;
-                  const newParagraph = state.schema.nodes.paragraph.create();
-                  const transaction = state.tr.insert(endPos, newParagraph);
-
-                  const newPos = endPos + 1;
-                  const selection = TextSelection.create(transaction.doc, newPos);
-                  transaction.setSelection(selection);
-
-                  dispatch(transaction);
-                  handled = true;
-                  return false;
-                }
+                noPartNode = true;
               }
             });
+
+            if (noPartNode) {
+              const lastChild = doc.lastChild;
+              const shouldAddTrailing = !lastChild ||
+                  lastChild.type.name !== 'paragraph' ||
+                  lastChild.textContent.length > 0;
+
+              if (lastChild && shouldAddTrailing) {
+                const lastChildPos = doc.content.size - lastChild.nodeSize;
+                const endPos = lastChildPos + lastChild.nodeSize;
+                const newParagraph = state.schema.nodes.paragraph.create();
+                const transaction = state.tr.insert(endPos, newParagraph);
+
+                const newPos = endPos + 1;
+                const selection = TextSelection.create(transaction.doc, newPos);
+                transaction.setSelection(selection);
+
+                dispatch(transaction);
+                handled = true;
+              }
+            }
 
             return handled;
           },
@@ -92,7 +101,7 @@ export const TrailingParagraphExtension = Extension.create<TrailingParagraphOpti
               return element;
             };
 
-            let pushed = false;
+            let noPartNode = false;
 
             doc.descendants((node, pos) => {
               if (node.type.name === options.parentNodeName) {
@@ -113,20 +122,22 @@ export const TrailingParagraphExtension = Extension.create<TrailingParagraphOpti
                   }
                 }
               } else {
-                const lastChild = doc.lastChild;
-                if (lastChild && !pushed) {
-                  const lastChildPos = doc.content.size - lastChild.nodeSize;
-                  const endPos = lastChildPos + lastChild.nodeSize;
-                  decorations.push(
-                    Decoration.widget(endPos, createWidget, {
-                      side: 0,
-                    }),
-                  );
-                  pushed = true;
-                  return false;
-                }
+                noPartNode = true;
               }
             });
+
+            if (noPartNode) {
+              const lastChild = doc.lastChild;
+              if (lastChild) {
+                const lastChildPos = doc.content.size - lastChild.nodeSize;
+                const endPos = lastChildPos + lastChild.nodeSize;
+                decorations.push(
+                  Decoration.widget(endPos, createWidget, {
+                    side: 0,
+                  }),
+                );
+              }
+            }
 
             return DecorationSet.create(doc, decorations);
           },
