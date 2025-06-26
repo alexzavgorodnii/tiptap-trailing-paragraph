@@ -1,14 +1,37 @@
 {
   "name": "tiptap-trailing-paragraph",
   "version": "1.0.0",
-  "description": "",
+  "description": "A TipTap extension that ensures there's always a trailing paragraph in the editor",
   "main": "dist/index.cjs.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexzavgorodnii/trailing-paragraph.git"
+  },
+  "keywords": [
+    "tiptap",
+    "editor",
+    "extension",
+    "paragraph",
+    "rich-text",
+    "prosemirror"
+  ],
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/alexzavgorodnii/trailing-paragraph/issues"
+  },
+  "homepage": "https://github.com/alexzavgorodnii/trailing-paragraph#readme",
   "scripts": {
     "clean": "rm -rf dist",
     "build": "npm run clean && rollup -c",
-    "dev": "npm run clean && rollup -c -w"
+    "dev": "npm run clean && rollup -c -w",
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@rollup/plugin-babel": "^6.0.3",
