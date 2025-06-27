@@ -1,6 +1,6 @@
 {
   "name": "tiptap-trailing-paragraph",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A TipTap extension that ensures there's always a trailing paragraph in the editor",
   "main": "dist/index.cjs.js",
   "module": "dist/index.js",
