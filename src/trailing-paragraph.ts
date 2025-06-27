@@ -5,7 +5,7 @@ import { TextSelection } from '@tiptap/pm/state';
 import type { EditorView } from '@tiptap/pm/view';
 
 export interface TrailingParagraphOptions {
-  parentNodeName: string;
+  parentNodeName: string | null;
   trailingParagraphClass: string;
 }
 
@@ -14,7 +14,7 @@ export const TrailingParagraphExtension = Extension.create<TrailingParagraphOpti
 
   addOptions() {
     return {
-      parentNodeName: 'doc',
+      parentNodeName: null,
       trailingParagraphClass: 'trailing-paragraph',
     };
   },
@@ -27,50 +27,52 @@ export const TrailingParagraphExtension = Extension.create<TrailingParagraphOpti
         key: new PluginKey(this.name),
         props: {
           handleClick: (view: EditorView, pos: number, event: MouseEvent) => {
-            if (!view.editable || (event.target instanceof HTMLElement &&
-                !event.target.classList.contains(options.trailingParagraphClass))) {
+            if (
+              !view.editable ||
+              (event.target instanceof HTMLElement && !event.target.classList.contains(options.trailingParagraphClass))
+            ) {
               return false;
             }
 
             const { state, dispatch } = view;
             const { doc } = state;
             let handled = false;
-            let noPartNode = false;
+            let foundParentNode = false;
 
-            doc.descendants((node, nodePos) => {
-              if (node.type.name === options.parentNodeName) {
-                const lastChild = node.lastChild;
+            // Skip doc.descendants traversal if parentNodeName is null for performance optimization
+            if (options.parentNodeName) {
+              doc.descendants((node, nodePos) => {
+                if (node.type.name === options.parentNodeName) {
+                  foundParentNode = true;
+                  const lastChild = node.lastChild;
 
-                const shouldAddTrailing = !lastChild ||
-                  lastChild.type.name !== 'paragraph' ||
-                  lastChild.textContent.length > 0;
+                  const shouldAddTrailing =
+                    !lastChild || lastChild.type.name !== 'paragraph' || lastChild.textContent.length > 0;
 
-                if (shouldAddTrailing) {
-                  const nodeAtPos = doc.nodeAt(nodePos);
-                  if (nodeAtPos) {
-                    const endPos = nodePos + nodeAtPos.nodeSize - 1;
-                    const newParagraph = state.schema.nodes.paragraph.create();
-                    const transaction = state.tr.insert(endPos, newParagraph);
+                  if (shouldAddTrailing) {
+                    const nodeAtPos = doc.nodeAt(nodePos);
+                    if (nodeAtPos) {
+                      const endPos = nodePos + nodeAtPos.nodeSize - 1;
+                      const newParagraph = state.schema.nodes.paragraph.create();
+                      const transaction = state.tr.insert(endPos, newParagraph);
 
-                    const newPos = endPos + 1;
-                    const selection = TextSelection.create(transaction.doc, newPos);
-                    transaction.setSelection(selection);
+                      const newPos = Math.min(endPos + 1, transaction.doc.content.size);
+                      const selection = TextSelection.create(transaction.doc, newPos);
+                      transaction.setSelection(selection);
 
-                    dispatch(transaction);
-                    handled = true;
-                    return false;
+                      dispatch(transaction);
+                      handled = true;
+                      return false;
+                    }
                   }
                 }
-              } else {
-                noPartNode = true;
-              }
-            });
+              });
+            }
 
-            if (noPartNode) {
+            if (!foundParentNode) {
               const lastChild = doc.lastChild;
-              const shouldAddTrailing = !lastChild ||
-                  lastChild.type.name !== 'paragraph' ||
-                  lastChild.textContent.length > 0;
+              const shouldAddTrailing =
+                !lastChild || lastChild.type.name !== 'paragraph' || lastChild.textContent.length > 0;
 
               if (lastChild && shouldAddTrailing) {
                 const lastChildPos = doc.content.size - lastChild.nodeSize;
@@ -78,7 +80,7 @@ export const TrailingParagraphExtension = Extension.create<TrailingParagraphOpti
                 const newParagraph = state.schema.nodes.paragraph.create();
                 const transaction = state.tr.insert(endPos, newParagraph);
 
-                const newPos = endPos + 1;
+                const newPos = Math.min(endPos + 1, transaction.doc.content.size);
                 const selection = TextSelection.create(transaction.doc, newPos);
                 transaction.setSelection(selection);
 
@@ -101,32 +103,33 @@ export const TrailingParagraphExtension = Extension.create<TrailingParagraphOpti
               return element;
             };
 
-            let noPartNode = false;
+            let foundParentNode = false;
 
-            doc.descendants((node, pos) => {
-              if (node.type.name === options.parentNodeName) {
-                const lastChild = node.lastChild;
+            // Skip doc.descendants traversal if parentNodeName is null for performance optimization
+            if (options.parentNodeName) {
+              doc.descendants((node, pos) => {
+                if (node.type.name === options.parentNodeName) {
+                  foundParentNode = true;
+                  const lastChild = node.lastChild;
 
-                const shouldShowTrailing = !lastChild ||
-                  lastChild.type.name !== 'paragraph' ||
-                  lastChild.textContent.length > 0;
+                  const shouldShowTrailing =
+                    !lastChild || lastChild.type.name !== 'paragraph' || lastChild.textContent.length > 0;
 
-                if (shouldShowTrailing) {
-                  const nodeAtPos = doc.nodeAt(pos);
-                  if (nodeAtPos) {
-                    decorations.push(
-                      Decoration.widget(pos + nodeAtPos.nodeSize - 1, createWidget, {
-                        side: 0,
-                      }),
-                    );
+                  if (shouldShowTrailing) {
+                    const nodeAtPos = doc.nodeAt(pos);
+                    if (nodeAtPos) {
+                      decorations.push(
+                        Decoration.widget(pos + nodeAtPos.nodeSize - 1, createWidget, {
+                          side: 0,
+                        }),
+                      );
+                    }
                   }
                 }
-              } else {
-                noPartNode = true;
-              }
-            });
+              });
+            }
 
-            if (noPartNode) {
+            if (!foundParentNode) {
               const lastChild = doc.lastChild;
               if (lastChild) {
                 const lastChildPos = doc.content.size - lastChild.nodeSize;
