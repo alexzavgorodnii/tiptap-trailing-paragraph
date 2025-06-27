@@ -26,7 +26,7 @@
   "bugs": {
     "url": "https://github.com/alexzavgorodnii/trailing-paragraph/issues"
   },
-  "homepage": "https://github.com/alexzavgorodnii/trailing-paragraph#readme",
+  "homepage": "https://alexzavgorodnii.github.io/tiptap-trailing-paragraph/",
   "scripts": {
     "clean": "rm -rf dist",
     "build": "npm run clean && rollup -c",
