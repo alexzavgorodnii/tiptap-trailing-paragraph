@@ -10,6 +10,10 @@ A Tiptap extension that ensures there's always a trailing paragraph at the end o
 - 🪶 **Lightweight**: Minimal overhead with efficient ProseMirror integration
 - 🎨 **Styleable**: Add custom styles to the trailing paragraph element
 
+## Demo
+
+Try out the extension in action: [**Live Demo**](https://alexzavgorodnii.github.io/tiptap-trailing-paragraph/)
+
 ## Installation
 
 ```bash
@@ -67,7 +71,7 @@ const editor = new Editor({
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `parentNodeName` | `string` | `'doc'` | The name of the parent node where trailing paragraphs should be added |
+| `parentNodeName` | `string or null` | `null` | The name of the parent node where trailing paragraphs should be added |
 | `trailingParagraphClass` | `string` | `'trailing-paragraph'` | CSS class applied to the trailing paragraph element |
 
 ## Styling
@@ -93,13 +97,6 @@ The extension works by:
 3. **Adding visual hints**: Creates a decoration (widget) that shows where users can click to continue typing
 4. **Handling clicks**: Intercepts clicks on the trailing area and automatically inserts a new paragraph
 5. **Maintaining focus**: Automatically positions the cursor in the new paragraph for seamless typing
-
-## Use Cases
-
-- **Blog editors**: Ensure users can always add content after images, code blocks, or other elements
-- **Documentation tools**: Make it easy to continue writing after inserting special blocks
-- **Note-taking apps**: Provide a consistent writing experience regardless of the last content type
-- **Content management systems**: Improve the authoring experience for content creators
 
 ## Browser Support
 
