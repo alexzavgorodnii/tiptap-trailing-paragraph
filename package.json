@@ -11,7 +11,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/alexzavgorodnii/trailing-paragraph.git"
+    "url": "git+https://alexzavgorodnii.github.io/tiptap-trailing-paragraph.git"
   },
   "keywords": [
     "tiptap",
@@ -24,7 +24,7 @@
   "author": "Oleksandr Zavhorodnii workprofileaz@gmail.com",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/alexzavgorodnii/trailing-paragraph/issues"
+    "url": "https://alexzavgorodnii.github.io/tiptap-trailing-paragraph/issues"
   },
   "homepage": "https://alexzavgorodnii.github.io/tiptap-trailing-paragraph/",
   "scripts": {
