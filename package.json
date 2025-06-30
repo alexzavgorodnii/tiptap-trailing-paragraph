@@ -11,7 +11,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://alexzavgorodnii.github.io/tiptap-trailing-paragraph.git"
+    "url": "git+https://github.com/alexzavgorodnii/tiptap-trailing-paragraph.git"
   },
   "keywords": [
     "tiptap",
